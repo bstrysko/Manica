@@ -1,9 +1,11 @@
-package ioio.examples.simple;
+package manica;
 
+import ioio.examples.simple.R;
 import ioio.lib.api.AnalogInput;
 import ioio.lib.api.DigitalOutput;
 import ioio.lib.api.IOIO;
 import ioio.lib.api.PwmOutput;
+import ioio.lib.api.TwiMaster;
 import ioio.lib.api.exception.ConnectionLostException;
 import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
@@ -26,7 +28,7 @@ public class IOIOSimpleApp extends IOIOActivity {
         textView_ = (TextView)findViewById(R.id.TextView);
         seekBar_ = (SeekBar)findViewById(R.id.SeekBar);
         toggleButton_ = (ToggleButton)findViewById(R.id.ToggleButton);
-
+        
         enableUi(false);
     }
 	
@@ -35,6 +37,7 @@ public class IOIOSimpleApp extends IOIOActivity {
 		private PwmOutput pwmOutput_;
 		private DigitalOutput led_;
 
+		private TwiMaster twi;
 		
 		@Override
 		public void setup() throws ConnectionLostException {
@@ -42,6 +45,9 @@ public class IOIOSimpleApp extends IOIOActivity {
 				input_ = ioio_.openAnalogInput(40);
 				pwmOutput_ = ioio_.openPwmOutput(12, 100);
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);
+				
+		        twi = ioio_.openTwiMaster(0,TwiMaster.Rate.RATE_100KHz,false);
+
 				enableUi(true);
 			} catch (ConnectionLostException e) {
 				enableUi(false);
