@@ -3,19 +3,6 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent">
-	<TextView  
-	    android:layout_width="fill_parent" 
-	    android:layout_height="wrap_content" 
-	    android:text="@string/seekbar_label"
-	    />
-	
-	<SeekBar
-		android:id="@+id/SeekBar"
-		android:layout_height="wrap_content"
-		android:layout_width="fill_parent"
-		android:max="1000"
-		android:progress="500"
-		/>
 
 	<LinearLayout
 		android:layout_width="wrap_content"
@@ -23,27 +10,194 @@
 		android:orientation="horizontal"
 		android:paddingTop="20px">
 		<TextView
-			android:text="@string/analog_label"
+			android:text="@string/magnometer_0_x_label"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:paddingRight="5px"
 			/>
 		<TextView
-			android:id="@+id/TextView"
-			android:text="0"
+			android:id="@+id/magnometer_0_x"
+			android:text="Undefined"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			/>
 	</LinearLayout>
-
-	<ToggleButton
-		android:id="@+id/ToggleButton"
+	
+	<LinearLayout
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:layout_gravity="center_horizontal"
-		android:layout_margin="20px"
-		android:textOff="Led is OFF"
-		android:textOn="Led is ON"
-		/>
-	<ImageView android:layout_height="wrap_content" android:id="@+id/imageView1" android:layout_width="wrap_content" android:src="@drawable/ioio_down"></ImageView>
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_0_y_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_0_y"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_0_z_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_0_z"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<View 
+		android:layout_width="fill_parent"
+		android:layout_height="2dip"
+		android:background="#00FF00"
+		android:layout_marginTop="2dip" 
+	    android:layout_marginBottom="2dip"
+	    />
+	
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_1_x_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_1_x"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_1_y_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_1_y"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_1_z_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_1_z"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<View 
+		android:layout_width="fill_parent"
+		android:layout_height="2dip"
+		android:background="#00FF00"
+		android:layout_marginTop="2dip" 
+	    android:layout_marginBottom="2dip" 
+	    />
+	
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_2_x_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_2_x"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_2_y_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_2_y"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<LinearLayout
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:paddingTop="20px">
+		<TextView
+			android:text="@string/magnometer_2_z_label"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:paddingRight="5px"
+			/>
+		<TextView
+			android:id="@+id/magnometer_2_z"
+			android:text="Undefined"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			/>
+	</LinearLayout>
+	
+	<View 
+		android:layout_width="fill_parent"
+		android:layout_height="2dip"
+		android:background="#00FF00"
+		android:layout_marginTop="2dip" 
+	    android:layout_marginBottom="2dip"   
+	    />
 </LinearLayout>

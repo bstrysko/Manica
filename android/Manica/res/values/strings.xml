@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Manica</string>
-    <string name="seekbar_label">Move to control the position:</string>
-    <string name="analog_label">Analog reading:</string>
+    
+	<string name="magnometer_0_x_label">Magnometer #0 X:</string>
+    <string name="magnometer_0_y_label">Magnometer #0 Y:</string>
+	<string name="magnometer_0_z_label">Magnometer #0 Z:</string>
+	
+	<string name="magnometer_1_x_label">Magnometer #1 X:</string>
+    <string name="magnometer_1_y_label">Magnometer #1 Y:</string>
+	<string name="magnometer_1_z_label">Magnometer #1 Z:</string>
+	
+	<string name="magnometer_2_x_label">Magnometer #2 X:</string>
+    <string name="magnometer_2_y_label">Magnometer #2 Y:</string>
+	<string name="magnometer_2_z_label">Magnometer #2 Z:</string>
 </resources>

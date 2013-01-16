@@ -1,6 +1,7 @@
 package build18.manica;
 
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,176 +30,259 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Manica extends IOIOActivity {
-	private TextView textView_;
-	private SeekBar seekBar_;
-	private ToggleButton toggleButton_;
+public class Manica extends IOIOActivity 
+{
+	private static final int NUMBER_OF_MAGNOMETERS = 3;
+	private static final int NUMBER_OF_MAGNOMETER_AXIS = 3;
+	
 	private WebSocketClient server;
+	private TextView magnometers_textviews[][];
 	
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) 
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        textView_ = (TextView)findViewById(R.id.TextView);
-        seekBar_ = (SeekBar)findViewById(R.id.SeekBar);
-        toggleButton_ = (ToggleButton)findViewById(R.id.ToggleButton);
+        magnometers_textviews = new TextView[NUMBER_OF_MAGNOMETERS][NUMBER_OF_MAGNOMETER_AXIS];
         
-        enableUi(false);
+        magnometers_textviews[0][0] = (TextView)findViewById(R.id.magnometer_0_x);
+        magnometers_textviews[0][1] = (TextView)findViewById(R.id.magnometer_0_y);
+        magnometers_textviews[0][2] = (TextView)findViewById(R.id.magnometer_0_z);
+        
+        magnometers_textviews[1][0] = (TextView)findViewById(R.id.magnometer_1_x);
+        magnometers_textviews[1][1] = (TextView)findViewById(R.id.magnometer_1_y);
+        magnometers_textviews[1][2] = (TextView)findViewById(R.id.magnometer_1_z);
+        
+        magnometers_textviews[2][0] = (TextView)findViewById(R.id.magnometer_2_x);
+        magnometers_textviews[2][1] = (TextView)findViewById(R.id.magnometer_2_y);
+        magnometers_textviews[2][2] = (TextView)findViewById(R.id.magnometer_2_z);
+        
         List<BasicNameValuePair> extraHeaders = Arrays.asList();
 
         server = new WebSocketClient(URI.create("ws://128.2.97.197:8080"), new Listener() 
         {
         	    @Override
-        	    public void onConnect() {
+        	    public void onConnect() 
+        	    {
         	    }
 
         	    @Override
-        	    public void onMessage(String message) {
+        	    public void onMessage(String message) 
+        	    {
         	    }
 
         	    @Override
-        	    public void onMessage(byte[] data) {
+        	    public void onMessage(byte[] data) 
+        	    {
         	    }
 
         	    @Override
-        	    public void onDisconnect(int code, String reason) {
+        	    public void onDisconnect(int code, String reason) 
+        	    {
         	    }
 
         	    @Override
-        	    public void onError(Exception error) {
+        	    public void onError(Exception error) 
+        	    {
         	    }
         }, extraHeaders);
 
         server.connect();
-
-        	// Later… 
-        	/*client.send("hello!");
-        	client.send(new byte[] { 0xDE, 0xAD, 0xBE, 0xEF });
-        	client.disconnect();*/
     }
 	
-	class Looper extends BaseIOIOLooper {
+	class Looper extends BaseIOIOLooper 
+	{
 		private DigitalOutput led_;
-		private TwiMaster twi0;
+		
+		private TwiMaster twi[];
 		
 		@Override
-		public void setup() throws ConnectionLostException {
-			try {
-				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);	
-		        twi0 = ioio_.openTwiMaster(0,TwiMaster.Rate.RATE_100KHz,false);
-
-		        byte send_buffer[] = new byte[2]; 
-				send_buffer[0] = 0x11;
-				send_buffer[1] = (byte)0x80;
-				
-				byte read_buffer[] = new byte[1];
-				
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, 0);
-				
-				Thread.sleep(15);
-				
-				send_buffer[0] = 0x10;
-				send_buffer[1] = 0x1;
-				
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length,read_buffer,0);
-		        
-				enableUi(true);
-				
-				setText("Completed Setup");
-			}
-			catch (InterruptedException e) 
+		public void setup() throws ConnectionLostException 
+		{
+			try 
 			{
-				setText("Setup InterruptedException");
-				ioio_.disconnect();
+				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);	
+		        
+				twi = new TwiMaster[NUMBER_OF_MAGNOMETERS];
+				
+				for(int i = 0; i < twi.length; i++)
+				{
+					twi[i] = ioio_.openTwiMaster(i, TwiMaster.Rate.RATE_100KHz, false);
+					init_magnometer(i);
+				}		        
 			} 
 			catch (ConnectionLostException e) 
 			{
-				setText("Setup ConnectionLostException");
-				enableUi(false);
 				throw e;
 			}
 		}
 		
-		@Override
-		public void loop() throws ConnectionLostException {
+		private void init_magnometer(int magnometer_id)
+		{
+			byte send_buffer[] = new byte[2]; 
+			send_buffer[0] = 0x11;
+			send_buffer[1] = (byte)0x80;
+			
+			byte read_buffer[] = new byte[1];
+			
 			try 
 			{
-				JSONObject message = new JSONObject();
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, 0);
+				Thread.sleep(15);
+			} 
+			catch (ConnectionLostException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			catch (InterruptedException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+						
+			send_buffer[0] = 0x10;
+			send_buffer[1] = 0x1;
+			
+			try 
+			{
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length,read_buffer,0);
+			} 
+			catch (ConnectionLostException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			catch (InterruptedException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		private JSONObject read_magnometer(int magnometer_id) throws ConnectionLostException
+		{
+			JSONObject message = new JSONObject();
+			
+			try 
+			{
+				message.put("magnometer",magnometer_id);
+			} 
+			catch (JSONException e1) 
+			{
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			
+			byte send_buffer[] = new byte[1]; 				
+			byte read_buffer[] = new byte[1];
 
-				setText("Begin Loop");
-				
-				byte send_buffer[] = new byte[1]; 				
-				byte read_buffer[] = new byte[1];
-				
+			short x_data = 0;
+			short y_data = 0;
+			short z_data = 0;
+			
+			try 
+			{				
 				send_buffer[0] = 0x00;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				message.put("DR_STATUS",Byte.valueOf(read_buffer[0]));
 				Thread.sleep(4);
 				
-				short x_data = 0;
-				short y_data = 0;
-				short z_data = 0;
-				
 				send_buffer[0] = 0x01;
-				//twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
-				read_buffer[0] = 0x1;
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				x_data = (short)((read_buffer[0]) << 8);
 				Thread.sleep(4);
 				
 				send_buffer[0] = 0x02;
 				read_buffer[0] = 0x2;
-				//twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				x_data |= ((short)read_buffer[0] & 0x00FF);
 				message.put("OUT_X",Short.valueOf(x_data));
 				Thread.sleep(4);
 
 				send_buffer[0] = 0x03;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				y_data = (short)((read_buffer[0]) << 8);
 				Thread.sleep(4);
 
 				send_buffer[0] = 0x04;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				y_data |= ((short)read_buffer[0] & 0x00FF);
 				message.put("OUT_Y",Short.valueOf(y_data));
 				Thread.sleep(4);
 				
 				send_buffer[0] = 0x05;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				z_data =  (short)((read_buffer[0]) << 8);
 				Thread.sleep(4);
 				
 				send_buffer[0] = 0x6;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				z_data |= ((short)read_buffer[0] & 0x00FF);
 				message.put("OUT_Z",Short.valueOf(z_data));
 				Thread.sleep(4);
 				
 				send_buffer[0] = 0x07;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				message.put("WHO_AM_I",Byte.valueOf(read_buffer[0]));
 				Thread.sleep(4);
 				
 				send_buffer[0] = 0x08;
-				twi0.writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
+				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, read_buffer.length);
 				message.put("SYSMOD",Byte.valueOf(read_buffer[0]));
 				Thread.sleep(4);
+								
+				return message;
+			} 
+			catch (InterruptedException e) 
+			{
+				ioio_.disconnect();
+			} 
+			catch (ConnectionLostException e) 
+			{
+				throw e;
+			} 
+			catch (JSONException e) 
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return null;
+		}
+		
+		@Override
+		public void loop() throws ConnectionLostException 
+		{
+			try {
+				JSONArray message = new JSONArray();
+				
+				short values[][] = new short[twi.length][NUMBER_OF_MAGNOMETER_AXIS];
+				
+				for(int i = 0; i < twi.length; i++)
+				{
+					JSONObject magnometer_values = read_magnometer(i);
+					
+					try 
+					{
+						values[i][0] = (Short)magnometer_values.get("OUT_X");
+						values[i][1] = (Short)magnometer_values.get("OUT_Y");
+						values[i][2] = (Short)magnometer_values.get("OUT_Z");
+					} 
+					catch (JSONException e) 
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					message.put(magnometer_values);
+				}
 				
 				server.send(message.toString());
 				
-				setText("End Loop");
-				
-				Thread.sleep(1000);
-				
+				Thread.sleep(5);
 			} catch (InterruptedException e) {
-				setText("Loop  InterruptedException");
-				ioio_.disconnect();
-			} catch (ConnectionLostException e) {
-				setText("Loop  ConnectionLostException");
-				enableUi(false);
-				throw e;
-			} catch (JSONException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -206,25 +290,25 @@ public class Manica extends IOIOActivity {
 	}
 
 	@Override
-	protected IOIOLooper createIOIOLooper() {
+	protected IOIOLooper createIOIOLooper() 
+	{	
 		return new Looper();
 	}
-
-	private void enableUi(final boolean enable) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				seekBar_.setEnabled(enable);
-				toggleButton_.setEnabled(enable);
-			}
-		});
-	}
 	
-	private void setText(final String str) {
-		runOnUiThread(new Runnable() {
+	private void set_magnometers_textviews(final short[][] values) 
+	{
+		runOnUiThread(new Runnable() 
+		{
 			@Override
-			public void run() {
-				textView_.setText(str);
+			public void run() 
+			{
+				for(int magnometer = 0; magnometer < NUMBER_OF_MAGNOMETERS; magnometer++)
+				{
+					for(int axis = 0; axis < NUMBER_OF_MAGNOMETER_AXIS; axis++)
+					{
+						magnometers_textviews[magnometer][axis].setText(values[magnometer][axis]);
+					}
+				}
 			}
 		});
 	}
