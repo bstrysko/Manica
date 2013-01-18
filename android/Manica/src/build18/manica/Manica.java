@@ -19,6 +19,10 @@ import ioio.lib.util.BaseIOIOLooper;
 import ioio.lib.util.IOIOLooper;
 import ioio.lib.util.android.IOIOActivity;
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -30,15 +34,21 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class Manica extends IOIOActivity 
+public class Manica extends IOIOActivity implements SensorEventListener 
 {
 	private static final int NUMBER_OF_MAGNOMETERS = 3;
 	private static final int NUMBER_OF_MAGNOMETER_AXIS = 3;
+	
+	private static final int NUMBER_OF_ACCELEROMETERS = 1;
+	
+	private SensorManager mSensorManager;
+	private Sensor mAccelerometer;
 	
 	private WebSocketClient server;
 	private boolean connected_server;
 	
 	private TextView magnometers_textviews[][];
+	private TextView accelerometers_textviews[];
 	private TextView status_textview;
 	
     @Override
@@ -46,6 +56,10 @@ public class Manica extends IOIOActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         magnometers_textviews = new TextView[NUMBER_OF_MAGNOMETERS][NUMBER_OF_MAGNOMETER_AXIS];
         
@@ -60,6 +74,14 @@ public class Manica extends IOIOActivity
         magnometers_textviews[2][0] = (TextView)findViewById(R.id.magnometer_2_x);
         magnometers_textviews[2][1] = (TextView)findViewById(R.id.magnometer_2_y);
         magnometers_textviews[2][2] = (TextView)findViewById(R.id.magnometer_2_z);
+        
+        
+        accelerometers_textviews = new TextView[3];
+        
+        accelerometers_textviews[0] = (TextView)findViewById(R.id.accelerometer_0_x);
+        accelerometers_textviews[1] = (TextView)findViewById(R.id.accelerometer_0_y);
+        accelerometers_textviews[2] = (TextView)findViewById(R.id.accelerometer_0_z);        
+        
         
         status_textview = (TextView)findViewById(R.id.status);
         
@@ -106,6 +128,41 @@ public class Manica extends IOIOActivity
 
         server.connect();
     }
+    
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+    
+    @Override
+    public void onSensorChanged(SensorEvent event) 
+    {
+    	JSONObject message = new JSONObject();
+    	
+    	try 
+    	{
+			message.put("type","accelerometer");
+		
+	    	float data[] = new float[3];
+	    	JSONArray data_o = new JSONArray();
+	    	
+	    	for(int axis = 0; axis < 3; axis++)
+	    	{
+	    		float value = event.values[axis];
+	    		data[axis] = value;
+	    		data_o.put(value);
+	    	}
+	    	
+	    	set_accelerometer_textviews(data);
+	    	message.put("data",data_o);
+	    	
+	    	if(connected_server == true)
+	    	{
+	    		server.send(message.toString());
+	    	}
+    	} 
+    	catch (JSONException e) 
+    	{
+		}
+    }
 	
 	class Looper extends BaseIOIOLooper 
 	{
@@ -126,7 +183,7 @@ public class Manica extends IOIOActivity
 				{
 					set_status_textview("Initializing Magnometer " + i);
 					
-					twi[i] = ioio_.openTwiMaster(i, TwiMaster.Rate.RATE_100KHz, false);
+					twi[i] = ioio_.openTwiMaster(i, TwiMaster.Rate.RATE_400KHz, false);
 					init_magnometer(i);
 				}		        
 			}
@@ -277,7 +334,8 @@ public class Manica extends IOIOActivity
 		@Override
 		public void loop() throws ConnectionLostException 
 		{
-			try {
+			try 
+			{
 				JSONArray message = new JSONArray();
 				
 				short values[][] = new short[twi.length][NUMBER_OF_MAGNOMETER_AXIS];
@@ -309,7 +367,9 @@ public class Manica extends IOIOActivity
 				set_magnometers_textviews(values);
 				
 				Thread.sleep(5);
-			} catch (InterruptedException e) {
+			} 
+			catch (InterruptedException e) 
+			{
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -329,12 +389,27 @@ public class Manica extends IOIOActivity
 			@Override
 			public void run() 
 			{
-				for(int magnometer = 0; magnometer < NUMBER_OF_MAGNOMETERS; magnometer++)
+				for(int i = 0; i < NUMBER_OF_MAGNOMETERS; i++)
 				{
 					for(int axis = 0; axis < NUMBER_OF_MAGNOMETER_AXIS; axis++)
 					{
-						magnometers_textviews[magnometer][axis].setText(Short.toString(values[magnometer][axis]));
+						magnometers_textviews[i][axis].setText(Short.toString(values[i][axis]));
 					}
+				}
+			}
+		});
+	}
+	
+	private void set_accelerometer_textviews(final float values[])
+	{
+		runOnUiThread(new Runnable() 
+		{
+			@Override
+			public void run() 
+			{
+				for(int axis = 0; axis < 3; axis++)
+				{
+					accelerometers_textviews[axis].setText(Float.toString(values[axis]));
 				}
 			}
 		});

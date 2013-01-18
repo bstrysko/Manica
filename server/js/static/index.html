@@ -1,0 +1,143 @@
+<html>
+	<head>
+	    <link href="css/stylesheet.css" rel="stylesheet" type="text/css">	
+
+	    <script type="text/javascript" src="js/jquery-1.9.0.min.js"></script>
+		<script type="text/javascript" src="js/smoothie.js"></script>
+	</head>
+
+	<script type="text/javascript">
+		var ws = null;
+		var timeseries = [];
+		var charts = [];
+
+      	function get_acceleration_vector(data){
+        	th_xy = Math.atan2(data[1],data[0]);
+        	th_xz = Math.atan2(data[2],data[0]);
+        	th_yz = Math.atan2(data[2],data[1]);
+        	
+        	magnitude = Math.sqrt(Math.pow(data[0],2)+Math.pow(data[1],2)+Math.pow(data[2],2));
+        	
+        	return [magnitude, th_xy,th_xz,th_yz];
+		}
+
+
+      	function init()
+      	{
+      		ws = new WebSocket("ws://128.2.97.197:8080");
+
+      		ws.onopen = function()
+      		{
+      			console.log("Websocket Opened");
+      		}
+
+      		ws.onmessage = function(message)
+      		{
+      			message = JSON.parse(message.data);
+
+      			if(message["type"] === "accelerometer")
+      			{
+      				var data = message["data"];
+
+      				$("#accelerometer_0_0_value").text(parseFloat(data[0]).toFixed(3));
+      				$("#accelerometer_0_1_value").text(parseFloat(data[1]).toFixed(3));
+      				$("#accelerometer_0_2_value").text(parseFloat(data[2]).toFixed(3));
+
+      				var timestamp = new Date().getTime();
+
+      				timeseries[0][0].append(timestamp,data[0]);
+      				timeseries[0][1].append(timestamp,data[1]);
+      				timeseries[0][2].append(timestamp,data[2]);
+
+      				var acceleration_vector = get_acceleration_vector(data);
+
+      				$("#magnitude_value").text(parseFloat(acceleration_vector[0]).toFixed(3));
+      				$("#xy_value").text(parseFloat(acceleration_vector[1]).toFixed(3));
+      				$("#xz_value").text(parseFloat(acceleration_vector[2]).toFixed(3));
+      				$("#yz_value").text(parseFloat(acceleration_vector[3]).toFixed(3));
+      			}
+      			else if(message["type"] === "magnometers")
+      			{
+      				var data = message["data"];
+
+      				for(var n = 0; n < data.length; n++)
+      				{
+      					$("#magnometers_" + n + "_0_value").text(data[n][0]);
+      					$("#magnometers_" + n + "_1_value").text(data[n][1]);
+      					$("#magnometers_" + n + "_2_value").text(data[n][2]);
+
+      					var timestamp = new Date().getTime();
+
+      					timeseries[n+1][0].append(timestamp,data[n][0]);
+      					timeseries[n+1][1].append(timestamp,data[n][1]);
+      					timeseries[n+1][2].append(timestamp,data[n][2]);
+      				}
+      			}
+      			else
+      			{
+      				console.log("Invalid message of type: " + message["type"])
+      			}
+      		}
+
+      		ws.onclose = function()
+      		{
+      			console.log("Websocket Closed")
+      		}
+
+      		//s=0 will be accelerometer
+        	for(var s = 0; s < 4; s++)
+        	{
+        		var axis = [new TimeSeries(), new TimeSeries(), new TimeSeries()];
+				timeseries.push(axis);
+
+				var chart = null;
+
+				if(s == 0)
+				{
+					chart = new SmoothieChart({});
+				}
+				else
+				{
+					chart = new SmoothieChart({minValue: -1000, maxValue: 1000});
+				}
+
+        		chart.addTimeSeries(timeseries[s][0], { strokeStyle: 'rgba(255, 0, 0, 1)', lineWidth: 2 });
+        		chart.addTimeSeries(timeseries[s][1], { strokeStyle: 'rgba(0, 255, 0, 1)', lineWidth: 2 });
+        		chart.addTimeSeries(timeseries[s][2], { strokeStyle: 'rgba(0, 0, 255, 1)', lineWidth: 2 });
+
+        		chart.streamTo(document.getElementById("chart" + s), 500);
+        		charts.push(chart);
+        	}
+      	}
+    </script>
+
+	<body onload="init()">
+		<canvas id="chart0" width="400" height="400"></canvas>
+		<canvas id="chart1" width="400" height="400"></canvas>
+		<canvas id="chart2" width="400" height="400"></canvas>
+		<canvas id="chart3" width="400" height="400"></canvas>
+
+		<hr class=".divider1">
+		
+		<h2>Current Readings:</h2>
+		<br />
+		Accelerometer: <span><span id="accelerometer_0_0_value"></span>|<span id="accelerometer_0_1_value"></span>|<span id="accelerometer_0_2_value"></span></span>
+		<br />
+		Magnometer #1: <span><span id="magnometers_0_0_value"></span>|<span id="magnometers_0_1_value"></span>|<span id="magnometers_0_2_value"></span></span>
+		<br />
+		Magnometer #2: <span><span id="magnometers_1_0_value"></span>|<span id="magnometers_1_1_value"></span>|<span id="magnometers_1_2_value"></span></span>
+		<br />	
+		Magnometer #3: <span><span id="magnometers_2_0_value"></span>|<span id="magnometers_2_1_value"></span>|<span id="magnometers_2_2_value"></span></span>
+		<br />
+
+		<hr class=".divider1">
+		
+		<h2>Telemetry:</h2>
+		<br />
+
+		Accelerometer(Δ, Θ, φ, ψ) <span><span id="magnitude_value"></span>|<span id="xy_value"></span>|<span id="xz_value"></span>|<span id="yz_value"></span></span>
+		<br />
+
+	</body>
+
+</html>

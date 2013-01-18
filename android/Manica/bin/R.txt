@@ -1,4 +1,7 @@
 int drawable icon 0x7f020000
+int id accelerometer_0_x 0x7f060009
+int id accelerometer_0_y 0x7f06000a
+int id accelerometer_0_z 0x7f06000b
 int id magnometer_0_x 0x7f060000
 int id magnometer_0_y 0x7f060001
 int id magnometer_0_z 0x7f060002
@@ -8,8 +11,11 @@ int id magnometer_1_z 0x7f060005
 int id magnometer_2_x 0x7f060006
 int id magnometer_2_y 0x7f060007
 int id magnometer_2_z 0x7f060008
-int id status 0x7f060009
+int id status 0x7f06000c
 int layout main 0x7f030000
+int string accelerometer_0_x_label 0x7f05000a
+int string accelerometer_0_y_label 0x7f05000b
+int string accelerometer_0_z_label 0x7f05000c
 int string app_name 0x7f050000
 int string magnometer_0_x_label 0x7f050001
 int string magnometer_0_y_label 0x7f050002
@@ -20,5 +26,5 @@ int string magnometer_1_z_label 0x7f050006
 int string magnometer_2_x_label 0x7f050007
 int string magnometer_2_y_label 0x7f050008
 int string magnometer_2_z_label 0x7f050009
-int string status_label 0x7f05000a
+int string status_label 0x7f05000d
 int xml accessory_filter 0x7f040000
