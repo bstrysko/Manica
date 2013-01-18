@@ -13,4 +13,6 @@
 	<string name="magnometer_2_x_label">Magnometer #2 X:</string>
     <string name="magnometer_2_y_label">Magnometer #2 Y:</string>
 	<string name="magnometer_2_z_label">Magnometer #2 Z:</string>
+	
+	<string name="status_label">Status: </string>
 </resources>

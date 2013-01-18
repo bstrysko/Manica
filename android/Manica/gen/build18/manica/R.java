@@ -23,6 +23,7 @@ public final class R {
         public static final int magnometer_2_x=0x7f060006;
         public static final int magnometer_2_y=0x7f060007;
         public static final int magnometer_2_z=0x7f060008;
+        public static final int status=0x7f060009;
     }
     public static final class layout {
         public static final int main=0x7f030000;
@@ -38,6 +39,7 @@ public final class R {
         public static final int magnometer_2_x_label=0x7f050007;
         public static final int magnometer_2_y_label=0x7f050008;
         public static final int magnometer_2_z_label=0x7f050009;
+        public static final int status_label=0x7f05000a;
     }
     public static final class xml {
         public static final int accessory_filter=0x7f040000;

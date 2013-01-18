@@ -1,7 +1,5 @@
 var WebSocketServer = require('ws').Server;
 
-var count = 0;
-
 var wss = new WebSocketServer({
 	port: 8080
 });
@@ -13,8 +11,11 @@ wss.on('connection', function(ws) {
     {
     	message = JSON.parse(message);
         
-        console.log(count + ":" + message["OUT_X"] + " " + message["OUT_Y"] + " " + message["OUT_Z"]);
+        for(var i = 0; i < message.length; i++)
+        {
+            console.log(i + ":" + message[i]["OUT_X"] + " " + message[i]["OUT_Y"] + " " + message[i]["OUT_Z"]);
+        }
 
-        count++;
+        console.log("");
     });
 });

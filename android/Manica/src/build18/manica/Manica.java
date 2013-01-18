@@ -36,7 +36,10 @@ public class Manica extends IOIOActivity
 	private static final int NUMBER_OF_MAGNOMETER_AXIS = 3;
 	
 	private WebSocketClient server;
+	private boolean connected_server;
+	
 	private TextView magnometers_textviews[][];
+	private TextView status_textview;
 	
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -58,13 +61,20 @@ public class Manica extends IOIOActivity
         magnometers_textviews[2][1] = (TextView)findViewById(R.id.magnometer_2_y);
         magnometers_textviews[2][2] = (TextView)findViewById(R.id.magnometer_2_z);
         
+        status_textview = (TextView)findViewById(R.id.status);
+        
         List<BasicNameValuePair> extraHeaders = Arrays.asList();
+        
+        connected_server = false;
+        set_status_textview("Attempting to connect to data server...");
 
         server = new WebSocketClient(URI.create("ws://128.2.97.197:8080"), new Listener() 
         {
         	    @Override
         	    public void onConnect() 
         	    {
+        	    	connected_server = true;
+        	        set_status_textview("Connected to data server");
         	    }
 
         	    @Override
@@ -80,11 +90,17 @@ public class Manica extends IOIOActivity
         	    @Override
         	    public void onDisconnect(int code, String reason) 
         	    {
+        	    	connected_server = false;
+        	        set_status_textview("Attempting to reconnect to data server...");
+        	        server.connect();
         	    }
 
         	    @Override
-        	    public void onError(Exception error) 
+        	    public void onError(Exception error)
         	    {
+        	    	connected_server = false;
+        	    	set_status_textview("Attempting to connect to data server...");
+        	    	server.connect();
         	    }
         }, extraHeaders);
 
@@ -99,7 +115,7 @@ public class Manica extends IOIOActivity
 		
 		@Override
 		public void setup() throws ConnectionLostException 
-		{
+		{	
 			try 
 			{
 				led_ = ioio_.openDigitalOutput(IOIO.LED_PIN, true);	
@@ -108,10 +124,15 @@ public class Manica extends IOIOActivity
 				
 				for(int i = 0; i < twi.length; i++)
 				{
+					set_status_textview("Initializing Magnometer " + i);
+					
 					twi[i] = ioio_.openTwiMaster(i, TwiMaster.Rate.RATE_100KHz, false);
 					init_magnometer(i);
 				}		        
-			} 
+			}
+			/*
+			 * TODO: handle errors better
+			 */
 			catch (ConnectionLostException e) 
 			{
 				throw e;
@@ -125,9 +146,9 @@ public class Manica extends IOIOActivity
 			send_buffer[1] = (byte)0x80;
 			
 			byte read_buffer[] = new byte[1];
-			
+						
 			try 
-			{
+			{				
 				twi[magnometer_id].writeRead(0x0E,false,send_buffer,send_buffer.length, read_buffer, 0);
 				Thread.sleep(15);
 			} 
@@ -235,6 +256,9 @@ public class Manica extends IOIOActivity
 								
 				return message;
 			} 
+			/*
+			 * TODO: handle errors better
+			 */
 			catch (InterruptedException e) 
 			{
 				ioio_.disconnect();
@@ -245,8 +269,6 @@ public class Manica extends IOIOActivity
 			} 
 			catch (JSONException e) 
 			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 			
 			return null;
@@ -261,25 +283,30 @@ public class Manica extends IOIOActivity
 				short values[][] = new short[twi.length][NUMBER_OF_MAGNOMETER_AXIS];
 				
 				for(int i = 0; i < twi.length; i++)
-				{
+				{	
+					set_status_textview("Reading Magnometer " + i);
+					
 					JSONObject magnometer_values = read_magnometer(i);
 					
 					try 
-					{
+					{												
 						values[i][0] = (Short)magnometer_values.get("OUT_X");
 						values[i][1] = (Short)magnometer_values.get("OUT_Y");
 						values[i][2] = (Short)magnometer_values.get("OUT_Z");
-					} 
-					catch (JSONException e) 
-					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
-					
+					/*
+					 * TODO: handle errors better
+					 */
+					catch (JSONException e)
+					{
+					}
+										
 					message.put(magnometer_values);
 				}
 				
 				server.send(message.toString());
+				
+				set_magnometers_textviews(values);
 				
 				Thread.sleep(5);
 			} catch (InterruptedException e) {
@@ -306,9 +333,21 @@ public class Manica extends IOIOActivity
 				{
 					for(int axis = 0; axis < NUMBER_OF_MAGNOMETER_AXIS; axis++)
 					{
-						magnometers_textviews[magnometer][axis].setText(values[magnometer][axis]);
+						magnometers_textviews[magnometer][axis].setText(Short.toString(values[magnometer][axis]));
 					}
 				}
+			}
+		});
+	}
+	
+	private void set_status_textview(final String message) 
+	{
+		runOnUiThread(new Runnable() 
+		{
+			@Override
+			public void run() 
+			{
+				status_textview.setText(message);
 			}
 		});
 	}
